@@ -1,3 +1,6 @@
+
+"""Programa Cliente."""
+
 import socket
 import sys
 import os
@@ -8,6 +11,7 @@ from xml.sax.handler import ContentHandler
 
 
 class XmlHandler(ContentHandler):
+    """Crea un Diccionario y guarda los valores del xml."""
 
     def __init__(self):
         self.dicc = {}
@@ -16,7 +20,7 @@ class XmlHandler(ContentHandler):
 
     def startElement(self, atributo, attrs):
         self.list = ["account", "uaserver", "rtpaudio", "regproxy",
-                           "log", "audio"]
+                     "log", "audio"]
 
         self.dicc = {'account': ['username', 'passwd'],
                      'uaserver': ['ip', 'puerto'],
@@ -26,7 +30,7 @@ class XmlHandler(ContentHandler):
                      'audio': ['path']}
 
         self.diccionario = {}
-        if atributo  in self.list:
+        if atributo in self.list:
             self.diccionario = {'etiqueta': atributo}
             for objeto in self.dicc[atributo]:
                 self.diccionario[objeto] = attrs.get(objeto, "")
@@ -34,6 +38,7 @@ class XmlHandler(ContentHandler):
 
     def get_tags(self):
         return self.etiq
+
 
 if __name__ == "__main__":
 
@@ -47,7 +52,7 @@ if __name__ == "__main__":
         DICCIONARIO = xmlhandler.get_tags()
 
         account_username = DICCIONARIO[0]['username']
-        account_passwd =  DICCIONARIO[0]['passwd']
+        account_passwd = DICCIONARIO[0]['passwd']
         uaserver_ip = DICCIONARIO[1]['ip']
         uaserver_puerto = int(DICCIONARIO[1]['puerto'])
         rtpaudio_puerto = int(DICCIONARIO[2]['puerto'])
@@ -70,7 +75,8 @@ if __name__ == "__main__":
             my_socket.connect((regproxy_ip, regproxy_puerto))
 
             if METODO == 'REGISTER':
-                LOG.fich_log(log_path, "starting",regproxy_ip , regproxy_puerto, texto)
+                LOG.fich_log(log_path, "starting", regproxy_ip,
+                             regproxy_puerto, texto)
                 LINE = 'REGISTER ' + 'sip:' + account_username + ':'
                 LINE += str(uaserver_puerto) + ' SIP/2.0\r\n'
                 LINE += 'Expires: ' + Opcion + '\r\n'
@@ -86,14 +92,15 @@ if __name__ == "__main__":
 
             print("Enviando: " + LINE + "\r\n")
             my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
-            texto = " ".join( LINE.split("\r\n"))
-            LOG.fich_log(log_path, "sent_to", regproxy_ip , regproxy_puerto, texto)
+            texto = " ".join(LINE.split("\r\n"))
+            LOG.fich_log(log_path, "sent_to", regproxy_ip,
+                         regproxy_puerto, texto)
             try:
                 data = my_socket.recv(1024)
             except ConnectionRefusedError or ConnectionResetError:
                 texto = "ERROR: No Connection"
                 LOG.fich_log(log_path, "received",
-                            regproxy_ip , regproxy_puerto, texto)
+                             regproxy_ip, regproxy_puerto, texto)
                 sys.exit("ERROR: No Connection")
             respuesta = data.decode('utf-8')
             resultado = data.decode('utf-8').split('\r\n')
@@ -101,32 +108,33 @@ if __name__ == "__main__":
             supuestos = "SIP/2.0 100 Trying"
             texto = " ".join(respuesta.split('\r\n'))
             LOG.fich_log(log_path, "received",
-                        regproxy_ip, regproxy_puerto, texto)
+                         regproxy_ip, regproxy_puerto, texto)
             if "BYE RECIBIDO" in respuesta:
                 texto = ''
-                LOG.fich_log(log_path, "finishing", regproxy_ip , regproxy_puerto, texto)
-                respuesta  = respuesta
-            if  "405" in respuesta:
+                LOG.fich_log(log_path, "finishing", regproxy_ip,
+                             regproxy_puerto, texto)
+                respuesta = respuesta
+            if "405" in respuesta:
                 texto = ' '.join(respuesta.split("\r\n"))
-                respuesta =  "METODO INCORRECTO\r\n" + respuesta
+                respuesta = "METODO INCORRECTO\r\n" + respuesta
                 LOG.fich_log(log_path, "error",
-                            regproxy_ip , regproxy_puerto, texto)
-            if  resultado1[1] == '401':
+                             regproxy_ip, regproxy_puerto, texto)
+            if resultado1[1] == '401':
                 respuesta = "/// NECESITA AUTORIZACION ///\r\n" + respuesta
 
             print("Recibido: ")
             print(respuesta + '\r\n')
 
-            if  "401" in respuesta:
+            if "401" in respuesta:
                 contraseña_regis = respuesta.split(' ')[13].split('\r\n\r\n')[0]
                 nonce = contra(account_passwd, contraseña_regis)
                 LINE = 'REGISTER ' + 'sip:' + account_username + ':'
                 LINE += str(uaserver_puerto) + ' SIP/2.0\r\n'
                 LINE += 'Expires: ' + Opcion + '\r\n'
                 LINE += 'Authorization: Digest response = ' + nonce
-                texto = ' '.join( LINE.split("\r\n"))
+                texto = ' '.join(LINE.split("\r\n"))
                 LOG.fich_log(log_path, "sent_to",
-                            regproxy_ip , regproxy_puerto, texto)
+                             regproxy_ip, regproxy_puerto, texto)
                 print("Enviando: " + LINE + "\r\n")
                 my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
             if supuestos == resultado[1]:
@@ -134,8 +142,9 @@ if __name__ == "__main__":
                 ACK = 'ACK sip: ' + Opcion + ' SIP/2.0', 'utf-8'
                 texto = str(ACK)
                 LOG.fich_log(log_path, "sent_to",
-                            regproxy_ip , regproxy_puerto, texto)
-                my_socket.send(bytes('ACK sip: ' + Opcion + ' SIP/2.0', 'utf-8') +
+                             regproxy_ip, regproxy_puerto, texto)
+                my_socket.send(bytes('ACK sip: ' + Opcion +
+                                     ' SIP/2.0', 'utf-8') +
                                b'\r\n')
 
     except FileNotFoundError:
