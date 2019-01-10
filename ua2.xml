@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <account username="kchopo@broncano.es" passwd="56789"/>
+    <uaserver ip="127.0.0.1" puerto="6002"/>
+    <rtpaudio puerto="23031"/>
+    <regproxy ip="127.0.0.1" puerto="5001"/>
+    <log path="serverlog.txt"/>
+    <audio path="cancion.mp3"/>
+</config>
